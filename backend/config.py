@@ -23,8 +23,10 @@ DB_PATH = os.environ.get("DB_PATH", "/app/data/genka.db")
 # ImageCount は 16bit カウンタ（32K ロールオーバー補正の単位）
 ROLLOVER_STEP = 32768
 
-# アタリ（塗装剥げ）マイルストーン。iPhone の年間撮影実績から較正予定の仮値
-ATARI_MILESTONES = [3000, 10000, 30000, 65536, 100000]
+# アタリ（塗装剥げ）マイルストーン。
+# Immich 実測の iPhone 年間撮影実績（2025-26: 3,429枚 / 2024-25: 3,132枚 ≒ 3,000枚/年）から較正:
+# 半年 → 1年 → 2年 → 4年 → 10年相当で段階的に「相棒」になっていく
+ATARI_MILESTONES = [1500, 3000, 6000, 12000, 30000]
 
 
 def film_price_per_shot() -> float:
