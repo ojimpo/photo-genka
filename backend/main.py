@@ -73,4 +73,16 @@ async def inspect(file: UploadFile):
     }
 
 
-app.mount("/", StaticFiles(directory=os.environ.get("STATIC_DIR", "/app/frontend"), html=True), name="static")
+class CachedStaticFiles(StaticFiles):
+    """CF が旧アセットを掴み続けないよう、種類別に Cache-Control を明示する。"""
+
+    MAX_AGE = {".css": 300, ".js": 300, ".html": 60, ".png": 86400, ".svg": 86400}
+
+    def file_response(self, full_path, *args, **kwargs):
+        response = super().file_response(full_path, *args, **kwargs)
+        age = self.MAX_AGE.get(os.path.splitext(str(full_path))[1], 300)
+        response.headers["Cache-Control"] = f"public, max-age={age}"
+        return response
+
+
+app.mount("/", CachedStaticFiles(directory=os.environ.get("STATIC_DIR", "/app/frontend"), html=True), name="static")
