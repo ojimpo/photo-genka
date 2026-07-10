@@ -46,7 +46,7 @@ function render() {
   const ins = s.installments;
   $("installment-fill").style.width = `${(ins.ratio * 100).toFixed(1)}%`;
   $("installment-label").textContent =
-    `あなたの所有 ${(ins.ratio * 100).toFixed(0)}% ・ 残り${ins.total - ins.paid}回（分割 ${ins.paid}/${ins.total}）`;
+    `自己保有比率 ${(ins.ratio * 100).toFixed(0)}% ・ 残り${ins.total - ins.paid}回（分割 ${ins.paid}/${ins.total}）`;
 
   // 数字カード
   $("count").textContent = `${s.count.toLocaleString()}枚`;
