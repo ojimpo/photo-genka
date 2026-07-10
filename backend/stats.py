@@ -30,17 +30,20 @@ def trivia_for(count: int) -> dict | None:
     return hit
 
 
-def jaccs_progress(today: date) -> dict:
-    """支払進捗（演出専用。単価計算には使わない）。初回支払は購入月の翌月と仮定。"""
+def installment_progress(today: date) -> dict:
+    """SMBCショッピングクレジットの支払進捗（演出専用。単価計算には使わない）。
+
+    初回支払は購入月の翌月と仮定。実際の引落開始月が違ったらここを調整する。
+    """
     start_y, start_m = config.PURCHASE_DATE.year, config.PURCHASE_DATE.month + 1
     if start_m > 12:
         start_y, start_m = start_y + 1, 1
     months = (today.year - start_y) * 12 + (today.month - start_m)
-    paid = max(0, min(config.JACCS_INSTALLMENTS, months + 1))
+    paid = max(0, min(config.INSTALLMENTS, months + 1))
     return {
         "paid": paid,
-        "total": config.JACCS_INSTALLMENTS,
-        "ratio": paid / config.JACCS_INSTALLMENTS,
+        "total": config.INSTALLMENTS,
+        "ratio": paid / config.INSTALLMENTS,
     }
 
 
@@ -111,7 +114,7 @@ def build_stats() -> dict:
         "immich_total": latest.get("immich_total"),
         "film": film_stats(count),
         "trivia": trivia_for(count),
-        "jaccs": jaccs_progress(today),
+        "installments": installment_progress(today),
         "sparkle_opacity": round(sparkle_opacity(today), 3),
         "atari": atari(count),
     }

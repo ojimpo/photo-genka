@@ -41,10 +41,11 @@ function render() {
     ? `次のアタリまで ${s.atari.shots_to_next.toLocaleString()}枚`
     : "アタリ全解放 — 完全に相棒";
 
-  // JACCS 進捗（演出専用）
-  $("jaccs-fill").style.width = `${(s.jaccs.ratio * 100).toFixed(1)}%`;
-  $("jaccs-label").textContent =
-    `あなたの所有 ${(s.jaccs.ratio * 100).toFixed(0)}% ・ 残り${s.jaccs.total - s.jaccs.paid}回（JACCS ${s.jaccs.paid}/${s.jaccs.total}）`;
+  // 分割払い進捗（演出専用）
+  const ins = s.installments;
+  $("installment-fill").style.width = `${(ins.ratio * 100).toFixed(1)}%`;
+  $("installment-label").textContent =
+    `あなたの所有 ${(ins.ratio * 100).toFixed(0)}% ・ 残り${ins.total - ins.paid}回（分割 ${ins.paid}/${ins.total}）`;
 
   // 数字カード
   $("count").textContent = `${s.count.toLocaleString()}枚`;
