@@ -21,6 +21,7 @@ function render() {
   $("mock-badge").hidden = !s.mock;
 
   // ヒーロー
+  $("since").textContent = `SINCE ${s.purchase_date.replaceAll("-", "/")}`;
   $("price").textContent = yen(s.price_per_shot);
   $("breakdown").textContent = `${yen(s.total_price, 0)} ÷ ${s.count.toLocaleString()}枚`;
   const d = $("delta");
