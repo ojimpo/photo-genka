@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- ヒーローの X-E5 イラストと同じトーンのフラットなカメラアイコン -->
+  <rect width="64" height="64" rx="12" fill="#E9E7E2"/>
+  <rect x="6" y="18" width="52" height="30" rx="5" fill="#DDDAD2" stroke="#8F8C84" stroke-width="1.5"/>
+  <rect x="6" y="18" width="52" height="8" rx="4" fill="#3A3936"/>
+  <rect x="44" y="14" width="9" height="5" rx="1.5" fill="#3A3936"/>
+  <circle cx="32" cy="35" r="10.5" fill="#2E2D2A"/>
+  <circle cx="32" cy="35" r="6.5" fill="#4A4844"/>
+  <circle cx="32" cy="35" r="2.5" fill="#1B1A18"/>
+  <circle cx="13" cy="22" r="2" fill="#23221F"/>
+  <path d="M50 6 l1.8 4.2 4.2 1.8 -4.2 1.8 -1.8 4.2 -1.8-4.2 -4.2-1.8 4.2-1.8z" fill="#C9A227"/>
+</svg>
