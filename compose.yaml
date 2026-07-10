@@ -1,0 +1,22 @@
+name: photo-genka
+
+services:
+  genka:
+    build: .
+    container_name: genka
+    ports:
+      - "8403:8000"
+    env_file:
+      - .env
+    volumes:
+      - ./data:/app/data
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
+networks:
+  # ホストの Docker 既定アドレスプールが枯渇しているため手動でサブネットを指定
+  default:
+    ipam:
+      config:
+        - subnet: 10.77.0.0/24
