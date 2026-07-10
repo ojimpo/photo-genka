@@ -32,8 +32,9 @@ header span { font-size: 11px; color: var(--ink-sub); }
 
 /* ① ヒーロー */
 .hero { text-align: center; }
-.hero .camera { position: relative; width: 220px; margin: 0 auto; }
-.hero .camera svg { width: 100%; display: block; }
+.hero .camera { position: relative; width: 230px; margin: 0 auto; }
+.hero .camera img { width: 100%; height: auto; display: block; }
+.hero .camera .overlay { position: absolute; inset: 0; width: 100%; height: 100%; }
 .hero .atari-note { font-size: 11px; color: var(--ink-sub); margin-top: 2px; }
 .hero .ownership { max-width: 240px; margin: 10px auto 0; }
 .hero .ownership .bar {
