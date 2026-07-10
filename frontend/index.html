@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta property="og:title" content="photo-genka — x-e5.ojimpo.com">
+<meta property="og:description" content="X-E5の写真1枚あたりの値段が見れるだけのWEBアプリ">
+<meta property="og:type" content="website">
+<title>photo-genka — x-e5.ojimpo.com</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <h1>PHOTO-GENKA</h1>
+  <span>x-e5.ojimpo.com</span>
+</header>
+
+<p id="mock-badge" hidden>⚠ Immich 未接続 — 仮データ表示中</p>
+
+<!-- ① ヒーロー: X-E5イラスト＋現在単価 -->
+<section class="hero">
+  <div class="camera">
+    <svg viewBox="0 0 220 130" role="img" aria-label="X-E5のイラスト">
+      <rect x="25" y="38" width="170" height="78" rx="8" fill="#DDDAD2" stroke="#8F8C84" stroke-width="1.5"/>
+      <rect x="25" y="38" width="170" height="20" rx="8" fill="#3A3936"/>
+      <rect x="160" y="30" width="22" height="10" rx="2" fill="#3A3936"/>
+      <circle cx="110" cy="82" r="27" fill="#2E2D2A"/>
+      <circle cx="110" cy="82" r="17" fill="#4A4844"/>
+      <circle cx="110" cy="82" r="7" fill="#1B1A18"/>
+      <circle cx="45" cy="48" r="5" fill="#23221F" stroke="#8F8C84"/>
+      <!-- キラキラレイヤー: 経過日数/365 で opacity 1→0（JSが制御） -->
+      <g fill="#C9A227" id="sparkle" opacity="0">
+        <path d="M192 22 l3.5 8 8 3.5 -8 3.5 -3.5 8 -3.5-8 -8-3.5 8-3.5z"/>
+        <path d="M22 20 l2.5 6 6 2.5 -6 2.5 -2.5 6 -2.5-6 -6-2.5 6-2.5z"/>
+        <path d="M204 78 l2 4.5 4.5 2 -4.5 2 -2 4.5 -2-4.5 -4.5-2 4.5-2z"/>
+      </g>
+      <!-- アタリレイヤー: 枚数マイルストーンで段階的に出現（data-level 以上で表示） -->
+      <g class="wear" data-level="1" opacity="0"><path d="M25 46 q2 -8 10 -8" fill="none" stroke="#B8B4AA" stroke-width="2.5"/></g>
+      <g class="wear" data-level="2" opacity="0"><path d="M195 46 q-2 -8 -10 -8" fill="none" stroke="#B8B4AA" stroke-width="2.5"/></g>
+      <g class="wear" data-level="3" opacity="0"><path d="M25 108 q2 8 10 8" fill="none" stroke="#A89B6E" stroke-width="2.5"/></g>
+      <g class="wear" data-level="4" opacity="0"><path d="M195 108 q-2 8 -10 8" fill="none" stroke="#A89B6E" stroke-width="2.5"/></g>
+      <g class="wear" data-level="5" opacity="0"><rect x="98" y="39" width="24" height="3" rx="1.5" fill="#8C7B4A"/></g>
+    </svg>
+  </div>
+  <p class="atari-note" id="atari-note"></p>
+  <div class="ownership">
+    <div class="bar"><div class="fill" id="jaccs-fill"></div></div>
+    <p id="jaccs-label"></p>
+  </div>
+  <p class="label">いま、1枚あたり</p>
+  <div class="counter"><span id="price">—</span><small>/枚</small></div>
+  <p class="breakdown"><span id="breakdown"></span>　<span class="delta" id="delta"></span></p>
+</section>
+
+<!-- ② 数字カード -->
+<section class="cards">
+  <div class="card">
+    <p>撮影枚数（ImageCount）</p>
+    <strong id="count">—</strong>
+    <p class="trivia" id="trivia"></p>
+  </div>
+  <div class="card">
+    <p>フィルム1本（<span id="roll-shots">24</span>枚）換算</p>
+    <strong id="film-roll-price">—</strong>
+    <svg class="patrone" viewBox="0 0 60 40" aria-label="パトローネのイラスト">
+      <rect x="14" y="6" width="26" height="30" rx="3" fill="#2B2A28"/>
+      <rect x="14" y="10" width="26" height="14" fill="#B97A1B"/>
+      <rect x="40" y="14" width="8" height="12" fill="#1B1A18"/>
+      <rect x="48" y="17" width="6" height="6" fill="#8F8C84"/>
+      <rect x="12" y="4" width="30" height="4" rx="2" fill="#4A4844"/>
+      <rect x="12" y="34" width="30" height="4" rx="2" fill="#4A4844"/>
+    </svg>
+  </div>
+  <div class="card">
+    <p>フィルム比</p>
+    <strong class="good" id="film-ratio">—</strong>
+    <p class="trivia" id="film-note"></p>
+  </div>
+</section>
+
+<!-- ③ 単価×時系列グラフ -->
+<section class="chart">
+  <svg id="chart-svg" viewBox="0 0 440 180" role="img" aria-label="1枚あたり価格の推移グラフ"></svg>
+  <p class="toggle" id="scale-toggle">対数スケール ⇄</p>
+</section>
+
+<!-- ④ ドロップゾーン -->
+<section class="drop" id="drop">
+  <b>写真をドロップ / タップして選択</b>
+  <span id="drop-msg">「何枚目」と「撮影時点の単価」がわかります（画像は保存されません）</span>
+  <input type="file" id="file-input" accept=".jpg,.jpeg,.heic,.heif,.hif,.raf,image/*" hidden>
+  <div class="drop-result" id="drop-result" hidden></div>
+</section>
+
+<script src="app.js"></script>
+</body>
+</html>

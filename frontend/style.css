@@ -1,0 +1,86 @@
+:root {
+  --bg: #E9E7E2;          /* 18%グレー由来の暖色シルバー */
+  --card: #F7F6F3;
+  --ink: #2B2A28;
+  --ink-sub: #6E6C66;
+  --line: #D6D3CC;
+  --green: #3E6B4F;       /* 単価曲線・お得表示 */
+  --amber: #B97A1B;       /* フィルム基準線 */
+  --counter-bg: #23221F;  /* フレームカウンター窓 */
+  --counter-fg: #F2EFE8;
+  --num: "Barlow Semi Condensed", sans-serif;
+  --jp: -apple-system, "Hiragino Sans", "Noto Sans JP", sans-serif;
+}
+* { margin: 0; box-sizing: border-box; }
+html { height: 100%; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--jp);
+  max-width: 480px; margin: 0 auto;
+  padding: 20px 16px calc(48px + env(safe-area-inset-bottom));
+  font-size: 14px; line-height: 1.6;
+  min-height: 100%; overscroll-behavior: none;
+  -webkit-font-smoothing: antialiased;
+}
+header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 20px; }
+header h1 { font-family: var(--num); font-size: 15px; font-weight: 600; letter-spacing: 0.12em; }
+header span { font-size: 11px; color: var(--ink-sub); }
+
+#mock-badge {
+  background: #F3E2C0; border: 1px solid var(--amber); border-radius: 8px;
+  font-size: 11.5px; color: #7A5210; padding: 6px 10px; margin-bottom: 14px;
+}
+
+/* ① ヒーロー */
+.hero { text-align: center; }
+.hero .camera { position: relative; width: 220px; margin: 0 auto; }
+.hero .camera svg { width: 100%; display: block; }
+.hero .atari-note { font-size: 11px; color: var(--ink-sub); margin-top: 2px; }
+.hero .ownership { max-width: 240px; margin: 10px auto 0; }
+.hero .ownership .bar {
+  height: 5px; background: var(--line); border-radius: 3px; overflow: hidden;
+}
+.hero .ownership .fill { height: 100%; width: 0; background: var(--green); border-radius: 3px; transition: width .6s ease; }
+.hero .ownership p { font-size: 10.5px; color: var(--ink-sub); margin-top: 4px; }
+.hero .label { font-size: 12px; color: var(--ink-sub); margin-top: 18px; }
+.hero .counter {
+  display: inline-block; background: var(--counter-bg); color: var(--counter-fg);
+  font-family: var(--num); font-weight: 600; font-size: 52px; line-height: 1;
+  padding: 10px 22px 12px; border-radius: 10px; margin-top: 6px;
+  font-variant-numeric: tabular-nums; letter-spacing: 0.02em;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.45);
+}
+.hero .counter small { font-size: 20px; font-weight: 500; margin-left: 4px; color: #B9B5AA; }
+.hero .breakdown { font-size: 12px; color: var(--ink-sub); margin-top: 10px; }
+.hero .breakdown .delta { color: var(--green); }
+.hero .breakdown .delta.up { color: #A0452E; }
+
+/* ② 数字カード */
+.cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 24px 0; }
+@media (max-width: 380px) { .cards { grid-template-columns: 1fr 1fr; } }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; position: relative; }
+.card p { font-size: 10.5px; color: var(--ink-sub); }
+.card strong { font-family: var(--num); font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.card strong.good { color: var(--green); }
+.card .trivia { font-size: 10px; margin-top: 4px; line-height: 1.45; }
+.card .patrone { width: 44px; display: block; margin-top: 4px; }
+
+/* ③ グラフ */
+.chart { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 10px 8px; }
+.chart svg { width: 100%; display: block; }
+.chart .toggle { text-align: right; font-size: 10.5px; color: var(--ink-sub); padding: 4px 6px 2px; cursor: pointer; user-select: none; }
+
+/* ④ ドロップゾーン */
+.drop {
+  border: 1.5px dashed var(--line); border-radius: 10px; text-align: center;
+  padding: 20px 16px; margin-top: 16px; color: var(--ink-sub); font-size: 12.5px;
+  cursor: pointer; transition: border-color .15s, background .15s;
+}
+.drop.hover { border-color: var(--green); background: #EEF2EC; }
+.drop b { display: block; font-size: 13px; color: var(--ink); font-weight: 600; margin-bottom: 2px; }
+.drop-result {
+  margin-top: 12px; padding: 10px; border-radius: 8px;
+  background: var(--card); border: 1px solid var(--line);
+  font-size: 12.5px; color: var(--ink); text-align: left;
+}
+.drop-result .big { font-family: var(--num); font-size: 18px; font-weight: 600; }
+.drop-result .err { color: #A0452E; }
