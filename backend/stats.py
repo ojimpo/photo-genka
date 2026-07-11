@@ -34,7 +34,9 @@ def installment_progress(today: date) -> dict:
     """SMBCショッピングクレジットの支払進捗（演出専用。単価計算には使わない）。"""
     start_y, start_m = (int(v) for v in config.PAYMENT_START_YM.split("-"))
     months = (today.year - start_y) * 12 + (today.month - start_m)
-    paid = max(0, min(config.INSTALLMENTS, months + 1))
+    # 当月分は引落日（26日）を過ぎてから「支払済み」に数える
+    paid = months + (1 if today.day >= config.PAYMENT_DAY else 0)
+    paid = max(0, min(config.INSTALLMENTS, paid))
     return {
         "paid": paid,
         "total": config.INSTALLMENTS,

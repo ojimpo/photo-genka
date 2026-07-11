@@ -11,9 +11,11 @@ PURCHASE_DATE = date.fromisoformat(os.environ.get("PURCHASE_DATE", "2026-07-06")
 FILM_PRICE_JPY = _int("FILM_PRICE_JPY", 2500)
 FILM_DEV_PRICE_JPY = _int("FILM_DEV_PRICE_JPY", 1830)
 FILM_SHOTS_PER_ROLL = _int("FILM_SHOTS_PER_ROLL", 24)
-# SMBC ショッピングクレジット（カメラのキタムラ）48回無金利。初回引落は令和8年（2026年）7月
+# SMBC ショッピングクレジット（カメラのキタムラ）48回無金利・ボーナス払いなし
+# 支払期間: 令和8年7月〜令和12年6月（2026-07〜2030-06）、引落は毎月26日
 INSTALLMENTS = _int("INSTALLMENTS", 48)
 PAYMENT_START_YM = os.environ.get("PAYMENT_START_YM", "2026-07")
+PAYMENT_DAY = _int("PAYMENT_DAY", 26)
 
 IMMICH_URL = os.environ.get("IMMICH_URL", "http://host.docker.internal:2283")
 IMMICH_API_KEY = os.environ.get("IMMICH_API_KEY", "")
