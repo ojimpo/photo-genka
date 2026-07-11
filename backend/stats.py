@@ -31,13 +31,8 @@ def trivia_for(count: int) -> dict | None:
 
 
 def installment_progress(today: date) -> dict:
-    """SMBCショッピングクレジットの支払進捗（演出専用。単価計算には使わない）。
-
-    初回支払は購入月の翌月と仮定。実際の引落開始月が違ったらここを調整する。
-    """
-    start_y, start_m = config.PURCHASE_DATE.year, config.PURCHASE_DATE.month + 1
-    if start_m > 12:
-        start_y, start_m = start_y + 1, 1
+    """SMBCショッピングクレジットの支払進捗（演出専用。単価計算には使わない）。"""
+    start_y, start_m = (int(v) for v in config.PAYMENT_START_YM.split("-"))
     months = (today.year - start_y) * 12 + (today.month - start_m)
     paid = max(0, min(config.INSTALLMENTS, months + 1))
     return {
