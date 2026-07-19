@@ -40,6 +40,12 @@ def get_history():
     return stats.build_history()
 
 
+@app.get("/api/daily-shots")
+def get_daily_shots(since: str | None = None):
+    """日次撮影枚数。health.ojimpo.com が写真カテゴリの指標として参照する。"""
+    return stats.build_daily_shots(since)
+
+
 @app.post("/api/inspect")
 async def inspect(file: UploadFile):
     """ドロップされた写真の ImageCount を読み「何枚目・撮影時点の単価」を返す。

@@ -123,3 +123,20 @@ def build_history() -> list[dict]:
          "price": round(price_per_shot(s["count"]), 2)}
         for s in db.all_snapshots() if s["count"] > 0
     ]
+
+
+def build_daily_shots(since: str | None = None) -> list[dict]:
+    """日次の撮影枚数（ImageCount の日次差分）。health.ojimpo.com の指標用。
+
+    スナップショットが飛んだ日があった場合、その間の枚数はまとめて次のスナップショット日に計上される。
+    初日は新品ボディでカウンタ 0 始まりの前提で count をそのまま初日の枚数とする。
+    """
+    shots = []
+    prev = None
+    for s in db.all_snapshots():
+        delta = s["count"] - prev if prev is not None else s["count"]
+        prev = s["count"]
+        if since and s["day"] < since:
+            continue
+        shots.append({"day": s["day"], "shots": max(0, delta)})
+    return shots
