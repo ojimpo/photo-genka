@@ -40,6 +40,23 @@ def take_snapshot(day=None) -> bool:
     return True
 
 
+def refresh_today() -> bool:
+    """オンデマンドで今日のスナップショットを取り直す（/api/daily-shots?fresh=1 用）。
+
+    Immich の最新アセットが前回読んだものと同じなら ImageCount も同じはずなので、
+    オリジナルのダウンロードを省略する（メタデータ検索1回だけで済む）。
+    """
+    if not immich.enabled():
+        return False
+    day = stats.today_jst()
+    existing = db.snapshot_for(day.isoformat())
+    assets = immich.search_assets(taken_before=_day_end_utc_iso(day), size=1)
+    if existing and assets and assets[0]["id"] == existing.get("asset_id"):
+        log.info("%s: 最新アセット変化なし、スナップショット省略", day)
+        return True
+    return take_snapshot(day)
+
+
 def backfill():
     """購入日から今日まで、スナップショットのない日を各日最後の1枚で埋める。"""
     if not immich.enabled():

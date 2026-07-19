@@ -41,8 +41,17 @@ def get_history():
 
 
 @app.get("/api/daily-shots")
-def get_daily_shots(since: str | None = None):
-    """日次撮影枚数。health.ojimpo.com が写真カテゴリの指標として参照する。"""
+def get_daily_shots(since: str | None = None, fresh: bool = False):
+    """日次撮影枚数。health.ojimpo.com が写真カテゴリの指標として参照する。
+
+    fresh=1 で今日のスナップショットを取り直してから返す（変化がなければ軽い）。
+    取り直しに失敗しても保存済みデータは返す。
+    """
+    if fresh:
+        try:
+            snapshot_job.refresh_today()
+        except Exception:
+            logging.getLogger("genka.api").exception("fresh スナップショットに失敗")
     return stats.build_daily_shots(since)
 
 

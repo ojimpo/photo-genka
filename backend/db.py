@@ -58,6 +58,12 @@ def all_snapshots() -> list[dict]:
         return [dict(r) for r in c.execute("SELECT * FROM snapshots ORDER BY day")]
 
 
+def snapshot_for(day: str) -> dict | None:
+    with conn() as c:
+        r = c.execute("SELECT * FROM snapshots WHERE day = ?", (day,)).fetchone()
+        return dict(r) if r else None
+
+
 def latest_snapshot() -> dict | None:
     with conn() as c:
         r = c.execute("SELECT * FROM snapshots ORDER BY day DESC LIMIT 1").fetchone()
