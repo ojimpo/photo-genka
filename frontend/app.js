@@ -99,10 +99,11 @@ function renderLastShot() {
     return;
   }
   const dt = ls.at ? new Date(ls.at) : parseDay(ls.day);
-  const hhmm = ls.at
-    ? ` ${pad(dt.getHours())}:${pad(dt.getMinutes())}`
+  // 秒まで出す。「この1枚が切られた瞬間」がそのまま単価の分母を1増やした瞬間なので
+  const time = ls.at
+    ? ` ${pad(dt.getHours())}:${pad(dt.getMinutes())}<span class="sec">:${pad(dt.getSeconds())}</span>`
     : "";
-  when.innerHTML = `${fmtMD(dt)} <span class="wd">${WD_EN[dt.getDay()]}</span>${hhmm}`;
+  when.innerHTML = `${fmtMD(dt)} <span class="wd">${WD_EN[dt.getDay()]}</span>${time}`;
   const ago = ls.days_ago === 0 ? "今日" : ls.days_ago === 1 ? "昨日" : `${ls.days_ago}日前`;
   note.textContent = ls.shots ? `${ago} ・ その日 ${ls.shots.toLocaleString()}枚` : ago;
 }

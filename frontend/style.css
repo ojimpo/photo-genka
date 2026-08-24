@@ -101,6 +101,8 @@ header.lockup .site { font-size: 9.5px; color: var(--ink-sub); opacity: 0.7; mar
   display: block; font-family: var(--num); font-size: 24px; font-weight: 600;
   font-variant-numeric: tabular-nums; letter-spacing: 0.02em; line-height: 1.2;
 }
+/* 秒は一段小さく。時刻の主役は時分に置いたまま「秒まで記録されている」ことだけ見せる */
+.grass .last-shot strong .sec { font-size: 0.72em; color: var(--ink-sub); }
 /* 曜日はヘッダーの SINCE ロックアップと同じ字間広めの大文字。日付と時刻より一段引く */
 .grass .last-shot strong .wd {
   font-size: 0.6em; font-weight: 500; letter-spacing: 0.16em;
