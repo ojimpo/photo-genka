@@ -64,12 +64,25 @@ def read_asset_image_count(asset_id: str) -> int | None:
             os.unlink(path)
 
 
-def latest_image_count(taken_before: str | None = None) -> tuple[int, str] | None:
-    """(ImageCount, asset_id) を返す。読めるアセットが見つかるまで数件さかのぼる。"""
+def asset_local_datetime(asset_id: str) -> str | None:
+    """アセットの撮影日時（localDateTime = JST の壁時計）。既存行のバックフィル用。"""
+    with _client() as c:
+        r = c.get(f"/api/assets/{asset_id}")
+        if r.status_code != 200:
+            log.warning("asset %s の取得に失敗 (%s)", asset_id, r.status_code)
+            return None
+        return r.json().get("localDateTime")
+
+
+def latest_image_count(taken_before: str | None = None) -> tuple[int, str, str | None] | None:
+    """(ImageCount, asset_id, 撮影日時) を返す。読めるアセットが見つかるまで数件さかのぼる。
+
+    撮影日時は localDateTime（タイムゾーン適用済みの壁時計）。「最後に撮った日」の一次ソース。
+    """
     assets = search_assets(taken_before=taken_before, size=5)
     for asset in assets:
         count = read_asset_image_count(asset["id"])
         if count is not None:
-            return count, asset["id"]
+            return count, asset["id"], asset.get("localDateTime")
         log.warning("asset %s から ImageCount を読めませんでした", asset["id"])
     return None

@@ -33,10 +33,11 @@ def take_snapshot(day=None) -> bool:
     if result is None:
         log.warning("%s: ImageCount を読めるアセットがありません", day)
         return False
-    count, asset_id = result
+    count, asset_id, last_taken_at = result
     total = immich.asset_count() if day == stats.today_jst() else None
-    db.upsert_snapshot(day.isoformat(), count, asset_id, total)
-    log.info("%s: ImageCount=%s asset=%s immich_total=%s", day, count, asset_id, total)
+    db.upsert_snapshot(day.isoformat(), count, asset_id, total, last_taken_at)
+    log.info("%s: ImageCount=%s asset=%s immich_total=%s last_taken=%s",
+             day, count, asset_id, total, last_taken_at)
     return True
 
 
@@ -73,9 +74,24 @@ def backfill():
         day += timedelta(days=1)
 
 
+def backfill_last_taken():
+    """last_taken_at 列の追加前に取った行を、保存済み asset_id から埋め直す。"""
+    if not immich.enabled():
+        return
+    for row in db.rows_missing_last_taken():
+        try:
+            taken = immich.asset_local_datetime(row["asset_id"])
+        except Exception:
+            log.exception("%s の撮影日時バックフィルに失敗", row["day"])
+            continue
+        if taken:
+            db.set_last_taken(row["day"], taken)
+
+
 async def run():
     """起動時バックフィル → 毎日 JST 23:30 のスナップショットループ。"""
     await asyncio.to_thread(backfill)
+    await asyncio.to_thread(backfill_last_taken)
     while True:
         now = datetime.now(stats.JST)
         target = datetime.combine(now.date(), SNAPSHOT_AT, tzinfo=stats.JST)

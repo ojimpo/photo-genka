@@ -83,6 +83,44 @@ def film_stats(count: int) -> dict:
     return result
 
 
+def _local_naive(ts: str | None) -> str | None:
+    """Immich の localDateTime を素の壁時計文字列に正規化する。
+
+    Immich は既にタイムゾーンを適用した値に "Z" を付けて返してくる（18:45 JST が
+    "…T18:45:10.380Z"）。そのまま渡すと JS 側で 9 時間ずれるので接尾辞を落とす。
+    """
+    if not ts:
+        return None
+    ts = ts.rstrip("Z")
+    for sign in ("+", "-"):
+        i = ts.find(sign, 11)
+        if i > 0:
+            ts = ts[:i]
+    return ts
+
+
+def last_shot_info(daily: list[dict]) -> dict | None:
+    """最後に写真を撮った日。スナップショットが持つ撮影日時が一次ソース。
+
+    列の追加前に取ったスナップショットなど日時が無い場合は、日次差分から
+    「最後に枚数が増えた日」で代替する（日付までしか分からない）。
+    """
+    latest = db.latest_snapshot()
+    if not latest:
+        return None
+    at = _local_naive(latest.get("last_taken_at"))
+    day = at[:10] if at else next(
+        (d["day"] for d in reversed(daily) if d["shots"] > 0), None)
+    if not day:
+        return None
+    return {
+        "at": at,
+        "day": day,
+        "days_ago": (today_jst() - date.fromisoformat(day)).days,
+        "shots": next((d["shots"] for d in daily if d["day"] == day), None),
+    }
+
+
 def build_stats() -> dict:
     today = today_jst()
     latest = db.latest_snapshot()
@@ -114,6 +152,7 @@ def build_stats() -> dict:
         "installments": installment_progress(today),
         "sparkle_opacity": round(sparkle_opacity(today), 3),
         "atari": atari(count),
+        "last_shot": None if mock else last_shot_info(build_daily_shots()),
     }
 
 
