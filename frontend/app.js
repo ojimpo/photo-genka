@@ -4,6 +4,9 @@ const yen = (v, digits = 1) =>
 
 const DAY_MS = 86400000;
 const WD = ["日", "月", "火", "水", "木", "金", "土"];
+// 大きな数字は Barlow（日本語グリフを持たない）。曜日に「月」を混ぜるとそこだけ和文フォントに
+// 落ちて浮くので、Barlow で組める英字3文字にする
+const WD_EN = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
 // "YYYY-MM-DD" はローカル日付として解釈する（new Date(str) の UTC 解釈だと日付がずれる）
 const parseDay = (s) => { const [y, m, d] = s.split("-").map(Number); return new Date(y, m - 1, d); };
 const addDays = (dt, n) => new Date(dt.getFullYear(), dt.getMonth(), dt.getDate() + n);
@@ -98,7 +101,7 @@ function renderLastShot() {
   const hhmm = ls.at
     ? ` ${String(dt.getHours()).padStart(2, "0")}:${String(dt.getMinutes()).padStart(2, "0")}`
     : "";
-  when.textContent = `${fmtMD(dt)}(${WD[dt.getDay()]})${hhmm}`;
+  when.innerHTML = `${fmtMD(dt)} <span class="wd">${WD_EN[dt.getDay()]}</span>${hhmm}`;
   const ago = ls.days_ago === 0 ? "今日" : ls.days_ago === 1 ? "昨日" : `${ls.days_ago}日前`;
   note.textContent = ls.shots ? `${ago} ・ その日 ${ls.shots.toLocaleString()}枚` : ago;
 }
