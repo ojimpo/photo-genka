@@ -5,6 +5,12 @@
   --ink-sub: #6E6C66;
   --line: #D6D3CC;
   --green: #3E6B4F;       /* 単価曲線・お得表示 */
+  /* 草の濃淡5段階。空 → フィルム1本未満 → 1本 → 3本 → 10本相当 */
+  --g0: #E0DDD5;
+  --g1: #C6D6C1;
+  --g2: #94B795;
+  --g3: #5E8F66;
+  --g4: #3E6B4F;
   --amber: #B97A1B;       /* フィルム基準線 */
   --counter-bg: #23221F;  /* フレームカウンター窓 */
   --counter-fg: #F2EFE8;
@@ -84,7 +90,34 @@ header.lockup .site { font-size: 9.5px; color: var(--ink-sub); opacity: 0.7; mar
 .chart svg { width: 100%; display: block; }
 .chart .toggle { text-align: right; font-size: 10.5px; color: var(--ink-sub); padding: 4px 6px 2px; cursor: pointer; user-select: none; }
 
-/* ④ ドロップゾーン */
+/* ④ 最後に撮った日 ＋ 草 */
+.grass {
+  background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+  padding: 12px 12px 10px; margin-top: 16px; text-align: center;
+}
+.grass .last-shot { margin-bottom: 12px; }
+.grass .last-shot .k { font-size: 10.5px; color: var(--ink-sub); }
+.grass .last-shot strong {
+  display: block; font-family: var(--num); font-size: 24px; font-weight: 600;
+  font-variant-numeric: tabular-nums; letter-spacing: 0.02em; line-height: 1.2;
+}
+#grass-svg { display: block; margin: 0 auto; overflow: visible; }
+#grass-svg rect { cursor: pointer; }
+.grass .grass-caption { font-size: 10.5px; color: var(--ink-sub); margin-top: 8px; min-height: 1.6em; }
+.grass .grass-legend {
+  display: flex; align-items: center; justify-content: flex-end; gap: 3px;
+  font-size: 9.5px; color: var(--ink-sub); margin-top: 2px;
+}
+.grass .grass-legend i { width: 9px; height: 9px; border-radius: 2px; }
+.grass .grass-legend i[data-l="0"] { background: var(--g0); }
+.grass .grass-legend i[data-l="1"] { background: var(--g1); }
+.grass .grass-legend i[data-l="2"] { background: var(--g2); }
+.grass .grass-legend i[data-l="3"] { background: var(--g3); }
+.grass .grass-legend i[data-l="4"] { background: var(--g4); }
+.grass .grass-legend span:first-child { margin-right: 2px; }
+.grass .grass-legend span:last-child { margin-left: 2px; }
+
+/* ⑤ ドロップゾーン */
 .drop {
   border: 1.5px dashed var(--line); border-radius: 10px; text-align: center;
   padding: 20px 16px; margin-top: 16px; color: var(--ink-sub); font-size: 12.5px;

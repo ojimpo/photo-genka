@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=3">
+<link rel="stylesheet" href="style.css?v=4">
 </head>
 <body>
 
@@ -102,7 +102,23 @@
   <p class="toggle" id="scale-toggle">対数スケール ⇄</p>
 </section>
 
-<!-- ④ ドロップゾーン -->
+<!-- ④ 最後に撮った日 ＋ 草（日次撮影枚数のカレンダー） -->
+<section class="grass">
+  <div class="last-shot">
+    <p class="k">最後に撮った日</p>
+    <strong id="last-shot-when">—</strong>
+    <p class="k" id="last-shot-note"></p>
+  </div>
+  <svg id="grass-svg" role="img" aria-label="日ごとの撮影枚数カレンダー"></svg>
+  <p class="grass-caption" id="grass-caption"></p>
+  <div class="grass-legend">
+    <span>少</span>
+    <i data-l="0"></i><i data-l="1"></i><i data-l="2"></i><i data-l="3"></i><i data-l="4"></i>
+    <span>多</span>
+  </div>
+</section>
+
+<!-- ⑤ ドロップゾーン -->
 <section class="drop" id="drop">
   <b>写真をドロップ / タップして選択</b>
   <span id="drop-msg">「何枚目」と「撮影時点の単価」がわかります（画像は保存されません）</span>
@@ -110,6 +126,6 @@
   <div class="drop-result" id="drop-result" hidden></div>
 </section>
 
-<script src="app.js?v=4"></script>
+<script src="app.js?v=5"></script>
 </body>
 </html>

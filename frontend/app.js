@@ -2,17 +2,30 @@ const $ = (id) => document.getElementById(id);
 const yen = (v, digits = 1) =>
   "¥" + Number(v).toLocaleString("ja-JP", { maximumFractionDigits: digits, minimumFractionDigits: v < 100 ? digits : 0 });
 
+const DAY_MS = 86400000;
+const WD = ["日", "月", "火", "水", "木", "金", "土"];
+// "YYYY-MM-DD" はローカル日付として解釈する（new Date(str) の UTC 解釈だと日付がずれる）
+const parseDay = (s) => { const [y, m, d] = s.split("-").map(Number); return new Date(y, m - 1, d); };
+const addDays = (dt, n) => new Date(dt.getFullYear(), dt.getMonth(), dt.getDate() + n);
+const dayKey = (dt) =>
+  `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}-${String(dt.getDate()).padStart(2, "0")}`;
+const fmtMD = (dt) => `${dt.getMonth() + 1}/${dt.getDate()}`;
+
 let STATS = null;
 let HISTORY = [];
+let DAILY = [];
+let grassSummary = "";
 let logScale = false;
 
 async function load() {
-  const [stats, history] = await Promise.all([
+  const [stats, history, daily] = await Promise.all([
     fetch("/api/stats").then((r) => r.json()),
     fetch("/api/history").then((r) => r.json()),
+    fetch("/api/daily-shots").then((r) => r.json()),
   ]);
   STATS = stats;
   HISTORY = history;
+  DAILY = daily;
   render();
 }
 
@@ -64,8 +77,119 @@ function render() {
     $("film-note").textContent = `フィルム(${yen(s.film.film_price_per_shot)}/枚)より安くなるまで`;
   }
 
+  renderLastShot();
   drawChart();
+  drawGrass();
 }
+
+// ④-1 最後に撮った日。撮影日時は JST の壁時計なので、そのまま桁を出す（閲覧側TZで換算しない）
+function renderLastShot() {
+  const ls = STATS.last_shot;
+  const when = $("last-shot-when");
+  const note = $("last-shot-note");
+  if (!ls) {
+    when.textContent = "—";
+    note.textContent = "";
+    return;
+  }
+  const dt = ls.at ? new Date(ls.at) : parseDay(ls.day);
+  const hhmm = ls.at
+    ? ` ${String(dt.getHours()).padStart(2, "0")}:${String(dt.getMinutes()).padStart(2, "0")}`
+    : "";
+  when.textContent = `${fmtMD(dt)}(${WD[dt.getDay()]})${hhmm}`;
+  const ago = ls.days_ago === 0 ? "今日" : ls.days_ago === 1 ? "昨日" : `${ls.days_ago}日前`;
+  note.textContent = ls.shots ? `${ago} ・ その日 ${ls.shots.toLocaleString()}枚` : ago;
+}
+
+// ④-2 草: 日ごとの撮影枚数。濃さはフィルム換算（半本 / 1本 / 3本 / それ以上）で刻む
+function grassLevel(shots, roll) {
+  if (shots <= 0) return 0;
+  if (shots < roll / 2) return 1;
+  if (shots < roll) return 2;
+  if (shots < roll * 3) return 3;
+  return 4;
+}
+
+function drawGrass() {
+  const s = STATS;
+  const svg = $("grass-svg");
+  const roll = s.film.shots_per_roll;
+  const shots = new Map(DAILY.map((d) => [d.day, d.shots]));
+
+  const end = parseDay(s.as_of);
+  const purchase = parseDay(s.purchase_date);
+  // 購入直後は購入週から始まり、1年を超えたら直近53週の移動窓になる
+  const windowStart = addDays(end, -52 * 7);
+  const start = purchase > windowStart ? purchase : windowStart;
+  const gridStart = addDays(start, -start.getDay()); // 週の頭（日曜）に揃える
+  const weeks = Math.floor(Math.round((end - gridStart) / DAY_MS) / 7) + 1;
+
+  const LBL = 16, GAP = 3;
+  const avail = (svg.parentElement.clientWidth || 420) - 24; // section の左右パディング分
+  const cell = Math.max(6, Math.min(16, Math.floor((avail - LBL) / weeks) - GAP));
+  const step = cell + GAP;
+  const TOP = cell + 4; // 月ラベル1行分
+  const font = Math.min(9, Math.max(7, cell - 2));
+
+  let cells = "", months = "", labelledAt = -99, prevMonth = -1;
+  for (let w = 0; w < weeks; w++) {
+    const colFirst = addDays(gridStart, w * 7);
+    const x = LBL + w * step;
+    if (colFirst.getMonth() !== prevMonth) {
+      prevMonth = colFirst.getMonth();
+      if (x - labelledAt >= 24) { // 詰まりすぎる月ラベルは省く
+        labelledAt = x;
+        months += `<text x="${x}" y="${cell - 1}" font-size="${font}" fill="#8F8C84">${prevMonth + 1}月</text>`;
+      }
+    }
+    for (let d = 0; d < 7; d++) {
+      const dt = addDays(colFirst, d);
+      if (dt < purchase || dt > end) continue; // 購入前と未来は描かない
+      const key = dayKey(dt);
+      const v = shots.get(key);
+      // スナップショットが飛んだ日は「記録なし」として薄く置く（0枚と区別する）
+      const fill = v == null ? "var(--g0)" : `var(--g${grassLevel(v, roll)})`;
+      cells +=
+        `<rect x="${x}" y="${TOP + d * step}" width="${cell}" height="${cell}" rx="2" fill="${fill}"` +
+        `${v == null ? ' opacity="0.4"' : ""} data-day="${key}" data-shots="${v ?? ""}">` +
+        `<title>${fmtMD(dt)}(${WD[d]}) ${v == null ? "記録なし" : v + "枚"}</title></rect>`;
+    }
+  }
+  const wdLabels = [1, 3, 5]
+    .map((d) => `<text x="${LBL - 4}" y="${TOP + d * step + cell * 0.85}" text-anchor="end" ` +
+                `font-size="${font}" fill="#8F8C84">${WD[d]}</text>`)
+    .join("");
+
+  svg.setAttribute("width", LBL + weeks * step);
+  svg.setAttribute("height", TOP + 7 * step);
+  svg.innerHTML = months + wdLabels + cells;
+
+  const active = DAILY.filter((d) => d.shots > 0);
+  const best = active.reduce((a, b) => (b.shots > a.shots ? b : a), { shots: 0 });
+  grassSummary =
+    `撮影した日 ${active.length}日 / ${DAILY.length}日` +
+    (best.shots ? ` ・ 最多 ${best.shots.toLocaleString()}枚（${fmtMD(parseDay(best.day))}）` : "");
+  $("grass-caption").textContent = grassSummary;
+}
+
+// タップで1日分の内訳を出す（モバイルには hover が無いため）
+$("grass-svg").addEventListener("click", (e) => {
+  const r = e.target.closest("rect");
+  if (!r) {
+    $("grass-caption").textContent = grassSummary;
+    return;
+  }
+  const dt = parseDay(r.dataset.day);
+  const v = r.dataset.shots;
+  $("grass-caption").textContent =
+    `${fmtMD(dt)}(${WD[dt.getDay()]}) ${v === "" ? "記録なし" : Number(v).toLocaleString() + "枚"}`;
+});
+
+let resizeTimer;
+addEventListener("resize", () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => { if (STATS) drawGrass(); }, 150);
+});
 
 // ③ グラフ: 縦軸=1枚単価、横軸=時系列。緑の双曲線＋フィルム基準線＋損益分岐マーカー
 function drawChart() {
@@ -103,7 +227,7 @@ function drawChart() {
 
   // 損益分岐点: 単価がフィルム単価を初めて下回った点
   const cross = points.find((p) => p.price <= film);
-  const fmtDay = (t) => { const d = new Date(t); return `${d.getMonth() + 1}/${d.getDate()}`; };
+  const fmtDay = (t) => fmtMD(new Date(t));
 
   svg.innerHTML = `
     <line x1="${L}" y1="${B}" x2="${R}" y2="${B}" stroke="#C9C5BC"/>
