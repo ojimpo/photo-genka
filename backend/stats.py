@@ -118,6 +118,8 @@ def last_shot_info(daily: list[dict]) -> dict | None:
         "day": day,
         "days_ago": (today_jst() - date.fromisoformat(day)).days,
         "shots": next((d["shots"] for d in daily if d["day"] == day), None),
+        # この1枚こそが最新スナップショットの読み取り元なので、その ImageCount が「何枚目」になる
+        "image_count": latest["count"],
     }
 
 

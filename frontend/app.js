@@ -105,7 +105,11 @@ function renderLastShot() {
     : "";
   when.innerHTML = `${fmtMD(dt)} <span class="wd">${WD_EN[dt.getDay()]}</span>${time}`;
   const ago = ls.days_ago === 0 ? "今日" : ls.days_ago === 1 ? "昨日" : `${ls.days_ago}日前`;
-  note.textContent = ls.shots ? `${ago} ・ その日 ${ls.shots.toLocaleString()}枚` : ago;
+  note.textContent = [
+    ls.image_count ? `${ls.image_count.toLocaleString()}枚目` : null,
+    ago,
+    ls.shots ? `その日 ${ls.shots.toLocaleString()}枚` : null,
+  ].filter(Boolean).join(" ・ ");
 }
 
 // ④-2 草: 日ごとの撮影枚数。濃さはフィルム換算（半本 / 1本 / 3本 / それ以上）で刻む
