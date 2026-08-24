@@ -10,9 +10,10 @@ const WD_EN = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
 // "YYYY-MM-DD" はローカル日付として解釈する（new Date(str) の UTC 解釈だと日付がずれる）
 const parseDay = (s) => { const [y, m, d] = s.split("-").map(Number); return new Date(y, m - 1, d); };
 const addDays = (dt, n) => new Date(dt.getFullYear(), dt.getMonth(), dt.getDate() + n);
-const dayKey = (dt) =>
-  `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}-${String(dt.getDate()).padStart(2, "0")}`;
-const fmtMD = (dt) => `${dt.getMonth() + 1}/${dt.getDate()}`;
+const pad = (n) => String(n).padStart(2, "0");
+const dayKey = (dt) => `${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())}`;
+// 日付は必ず2桁ゼロ埋め。ヘッダーの SINCE 2026/07/06 が基準で、ページ全体をこれに揃える
+const fmtMD = (dt) => `${pad(dt.getMonth() + 1)}/${pad(dt.getDate())}`;
 // 草は月曜始まり。土日が隣り合うので「週末に撮る」パターンが1本の帯として読める
 const mondayIndex = (dt) => (dt.getDay() + 6) % 7; // 月=0 … 日=6
 
@@ -99,7 +100,7 @@ function renderLastShot() {
   }
   const dt = ls.at ? new Date(ls.at) : parseDay(ls.day);
   const hhmm = ls.at
-    ? ` ${String(dt.getHours()).padStart(2, "0")}:${String(dt.getMinutes()).padStart(2, "0")}`
+    ? ` ${pad(dt.getHours())}:${pad(dt.getMinutes())}`
     : "";
   when.innerHTML = `${fmtMD(dt)} <span class="wd">${WD_EN[dt.getDay()]}</span>${hhmm}`;
   const ago = ls.days_ago === 0 ? "今日" : ls.days_ago === 1 ? "昨日" : `${ls.days_ago}日前`;
