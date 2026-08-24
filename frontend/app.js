@@ -10,6 +10,8 @@ const addDays = (dt, n) => new Date(dt.getFullYear(), dt.getMonth(), dt.getDate(
 const dayKey = (dt) =>
   `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}-${String(dt.getDate()).padStart(2, "0")}`;
 const fmtMD = (dt) => `${dt.getMonth() + 1}/${dt.getDate()}`;
+// 草は月曜始まり。土日が隣り合うので「週末に撮る」パターンが1本の帯として読める
+const mondayIndex = (dt) => (dt.getDay() + 6) % 7; // 月=0 … 日=6
 
 let STATS = null;
 let HISTORY = [];
@@ -121,7 +123,7 @@ function drawGrass() {
   // 購入直後は購入週から始まり、1年を超えたら直近53週の移動窓になる
   const windowStart = addDays(end, -52 * 7);
   const start = purchase > windowStart ? purchase : windowStart;
-  const gridStart = addDays(start, -start.getDay()); // 週の頭（日曜）に揃える
+  const gridStart = addDays(start, -mondayIndex(start)); // 週の頭（月曜）に揃える
   const weeks = Math.floor(Math.round((end - gridStart) / DAY_MS) / 7) + 1;
 
   const LBL = 16, GAP = 3;
@@ -152,12 +154,12 @@ function drawGrass() {
       cells +=
         `<rect x="${x}" y="${TOP + d * step}" width="${cell}" height="${cell}" rx="2" fill="${fill}"` +
         `${v == null ? ' opacity="0.4"' : ""} data-day="${key}" data-shots="${v ?? ""}">` +
-        `<title>${fmtMD(dt)}(${WD[d]}) ${v == null ? "記録なし" : v + "枚"}</title></rect>`;
+        `<title>${fmtMD(dt)}(${WD[dt.getDay()]}) ${v == null ? "記録なし" : v + "枚"}</title></rect>`;
     }
   }
-  const wdLabels = [1, 3, 5]
+  const wdLabels = [0, 2, 4] // 月・水・金の行だけラベルを出す
     .map((d) => `<text x="${LBL - 4}" y="${TOP + d * step + cell * 0.85}" text-anchor="end" ` +
-                `font-size="${font}" fill="#8F8C84">${WD[d]}</text>`)
+                `font-size="${font}" fill="#8F8C84">${WD[d + 1]}</text>`)
     .join("");
 
   svg.setAttribute("width", LBL + weeks * step);
