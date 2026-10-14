@@ -15,6 +15,7 @@ import stats
 log = logging.getLogger("genka.snapshot")
 
 SNAPSHOT_AT = time(23, 30)
+REFRESH_WINDOW_DAYS = 14  # オンデマンド更新で遡って見直す日数（日次ジョブは全期間）
 
 
 def _day_end_utc_iso(day) -> str:
@@ -49,13 +50,33 @@ def refresh_today() -> bool:
     """
     if not immich.enabled():
         return False
-    day = stats.today_jst()
-    existing = db.snapshot_for(day.isoformat())
-    assets = immich.search_assets(taken_before=_day_end_utc_iso(day), size=1)
-    if existing and assets and assets[0]["id"] == existing.get("asset_id"):
-        log.info("%s: 最新アセット変化なし、スナップショット省略", day)
-        return True
-    return take_snapshot(day)
+    reconcile(window_days=REFRESH_WINDOW_DAYS)
+    return True
+
+
+def reconcile(window_days: int | None = None):
+    """各日のスナップショットを「その日の終わりまでに撮られた最新の1枚」で取り直す。
+
+    草は日次差分なので、撮影日ベースにするには後から Immich に取り込まれた写真を
+    過去の日に反映する必要がある。メタデータ検索1回で最新アセットが保存済みと同じなら
+    オリジナルのダウンロードを省く。window_days が None なら購入日から全期間。
+    """
+    if not immich.enabled():
+        return
+    today = stats.today_jst()
+    start = config.PURCHASE_DATE
+    if window_days is not None:
+        start = max(start, today - timedelta(days=window_days))
+    day = start
+    while day <= today:
+        try:
+            existing = db.snapshot_for(day.isoformat())
+            assets = immich.search_assets(taken_before=_day_end_utc_iso(day), size=1)
+            if not (existing and assets and assets[0]["id"] == existing.get("asset_id")):
+                take_snapshot(day)
+        except Exception:
+            log.exception("%s の撮影日ベース再計算に失敗", day)
+        day += timedelta(days=1)
 
 
 def backfill():
@@ -91,6 +112,7 @@ def backfill_last_taken():
 async def run():
     """起動時バックフィル → 毎日 JST 23:30 のスナップショットループ。"""
     await asyncio.to_thread(backfill)
+    await asyncio.to_thread(reconcile)
     await asyncio.to_thread(backfill_last_taken)
     while True:
         now = datetime.now(stats.JST)
@@ -100,5 +122,6 @@ async def run():
         await asyncio.sleep((target - now).total_seconds())
         try:
             await asyncio.to_thread(take_snapshot)
+            await asyncio.to_thread(reconcile)
         except Exception:
             log.exception("日次スナップショットに失敗")
